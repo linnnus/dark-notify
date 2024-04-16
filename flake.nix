@@ -17,27 +17,27 @@
       in
       {
         packages = rec {
-          dark-notifier = stdenv.mkDerivation {
-            pname = "dark-notifier";
+          dark-notify = stdenv.mkDerivation {
+            pname = "dark-notify";
             version = "0.1.0";
             src = ./.;
             buildInputs = with pkgs.darwin.apple_sdk.frameworks; [ Cocoa ];
             buildPhase = ''
-              cc -framework Cocoa -fobjc-arc -o dark-notifier dark-notify.m
+              cc @compile_flags.txt -O3 -o dark-notify dark-notify.m
             '';
             installPhase = ''
               mkdir -p $out/bin
-              mv dark-notifier $out/bin
+              mv dark-notify $out/bin
             '';
           };
-          default = dark-notifier;
+          default = dark-notify;
         };
         apps = rec {
-          dark-notifier = flake-utils.lib.mkApp { drv = self.packages.${system}.dark-notifier; };
-          default = dark-notifier;
+          dark-notify = flake-utils.lib.mkApp { drv = self.packages.${system}.dark-notify; };
+          default = dark-notify;
         };
         devShells.default = pkgs.mkShell {
-          buildInputs = [ self.packages.${system}.dark-notifier ];
+          buildInputs = [ self.packages.${system}.dark-notify ];
         };
       }
     );
