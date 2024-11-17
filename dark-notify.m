@@ -73,11 +73,10 @@
 
 @end
 
-void usage() {
+void printUsage() {
 	fprintf(stderr, "Usage: dark-notify [--exit / -e] [--only-changes / -o]\n"
 	                "  --exit, -e          Exit after the first color has been shown\n"
 	                "  --only-changes, -o  Do not show the current value when starting\n");
-	exit(1);
 }
 
 void *handleQuit(void *arg)
@@ -108,10 +107,12 @@ int main(int argc, char *argv[])
 		} else if (streq(arg, "--only-changes") || streq(arg, "-o")) {
 			onlyChanges = true;
 		} else if (streq(arg, "--help") || streq(arg, "-h")) {
-			usage();
+			printUsage();
+			exit(EXIT_SUCCESS); // This is the action the user requested; it is successful.
 		} else {
 			fprintf(stderr, "Unknown flag: %s\n", arg);
-			usage();
+			printUsage();
+			exit(EXIT_FAILURE);
 		}
 	}
 
