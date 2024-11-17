@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 		} else if (streq(arg, "--help") || streq(arg, "-h")) {
 			usage();
 		} else {
-			fprintf(stderr, "Unknown flag: %s\n", argv[0]);
+			fprintf(stderr, "Unknown flag: %s\n", arg);
 			usage();
 		}
 	}
