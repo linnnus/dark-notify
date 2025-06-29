@@ -33,6 +33,7 @@
           vim-plugin = pkgs.vimUtils.buildVimPlugin {
             name = "dark-notify";
             src = ./vimplugin;
+            runtimeDeps = [ dark-notify ];
           };
           demo-vim = pkgs.neovim.override {
             configure = {
