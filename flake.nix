@@ -30,6 +30,15 @@
               mv dark-notify $out/bin
             '';
           };
+          vim-plugin = pkgs.vimUtils.buildVimPlugin {
+            name = "dark-notify";
+            src = ./vimplugin;
+          };
+          demo-vim = pkgs.neovim.override {
+            configure = {
+              start = [ vim-plugin ];
+            };
+          };
           default = dark-notify;
         };
         apps = rec {
