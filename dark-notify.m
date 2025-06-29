@@ -133,6 +133,14 @@ int main(int argc, char *argv[])
 	// We don't want to create a window or appear in the Dock.
 	[app setActivationPolicy:NSApplicationActivationPolicyProhibited];
 
+	// Make sure stdout is line buffered, so this can be used for live monitoring.
+	// The default behavior is to buffer into large chunks (e.g. 4KiB) before writing.
+	// NOTE: According to spec, this must be the first action performed on stdout!
+	if (setvbuf(stdout, NULL, _IOLBF, 0) != 0) {
+		fprintf(stderr, "Failed to enable line-buffering on stdout\n");
+		exit(1);
+	}
+
 	void (^handleAppearanceChange)(NSAppearance *) = ^(NSAppearance *appearance) {
 		NSArray *names = @[NSAppearanceNameAqua, NSAppearanceNameDarkAqua];
 		id bestMatch = [appearance bestMatchFromAppearancesWithNames:names];
