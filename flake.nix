@@ -3,21 +3,40 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/25.05";
-    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-  flake-utils.lib.eachSystem [
-    "aarch64-darwin"
-    "x86_64-darwin"
-  ] (system:
-      let
-        pkgs = nixpkgs.legacyPackages.${system};
-        inherit (pkgs) lib stdenv;
-      in
-      {
-        packages = rec {
-          dark-notify = stdenv.mkDerivation {
+  outputs = { self, nixpkgs }:
+    let
+      supportedSystems = [ "aarch64-darwin" "x86_64-darwin" ];
+      eachSystem = nixpkgs.lib.genAttrs supportedSystems;
+      eachPkgs = f: eachSystem (system: let
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [self.overlays.default];
+        };
+      in f pkgs);
+    in
+    {
+      packages = eachPkgs (pkgs: rec {
+        inherit (pkgs) dark-notify;
+        vimPlugins = { inherit (pkgs.vimPlugins) dark-notify; };
+
+        demo-vim = pkgs.neovim.override {
+          configure = {
+            packages.demoPlugins.start = [
+              vimPlugins.dark-notify
+            ];
+          };
+        };
+
+        default = dark-notify;
+      });
+
+      overlays = {
+        default = final: prev: {
+          dark-notify = prev.callPackage ({
+            stdenv
+          }: stdenv.mkDerivation {
             pname = "dark-notify";
             version = "0.1.0";
             src = ./.;
@@ -28,28 +47,22 @@
               mkdir -p $out/bin
               mv dark-notify $out/bin
             '';
-          };
-          vim-plugin = pkgs.vimUtils.buildVimPlugin {
-            name = "dark-notify";
-            src = ./vimplugin;
-            runtimeDeps = [ dark-notify ];
-          };
-          demo-vim = pkgs.neovim.override {
-            configure = {
-              packages.demoPlugins.start = [
-                vim-plugin
-              ];
+          }) { };
+
+          vimPlugins = prev.vimPlugins.extend (final': prev': {
+            dark-notify = prev.vimUtils.buildVimPlugin {
+              name = "dark-notify";
+              src = ./vimplugin;
+              runtimeDeps = [ final.dark-notify ];
             };
-          };
-          default = dark-notify;
+          });
         };
-        apps = rec {
-          dark-notify = flake-utils.lib.mkApp { drv = self.packages.${system}.dark-notify; };
-          default = dark-notify;
+      };
+
+      devShells = eachPkgs (pkgs: {
+        default = pkgs.mkShell {
+          buildInputs = [ self.packages.${pkgs.system}.dark-notify ];
         };
-        devShells.default = pkgs.mkShell {
-          buildInputs = [ self.packages.${system}.dark-notify ];
-        };
-      }
-    );
+      });
+    };
 }
