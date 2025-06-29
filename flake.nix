@@ -2,7 +2,7 @@
   description = "Flake utils demo";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/23.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/25.05";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -21,7 +21,6 @@
             pname = "dark-notify";
             version = "0.1.0";
             src = ./.;
-            buildInputs = with pkgs.darwin.apple_sdk.frameworks; [ Cocoa ];
             buildPhase = ''
               cc @compile_flags.txt -O3 -o dark-notify dark-notify.m
             '';
@@ -37,7 +36,9 @@
           };
           demo-vim = pkgs.neovim.override {
             configure = {
-              start = [ vim-plugin ];
+              packages.demoPlugins.start = [
+                vim-plugin
+              ];
             };
           };
           default = dark-notify;
